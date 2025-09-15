@@ -66,15 +66,15 @@ jobs:
           script: |
             echo "Login to NCP Container Registry..."
             echo "${{ secrets.NCP_SECRET_KEY }}" | \
-            sudo docker login --username ${{ secrets.NCP_ACCESS_KEY }} \
+            docker login --username ${{ secrets.NCP_ACCESS_KEY }} \
                          --password-stdin vst.kr.ncr.ntruss.com
 
             echo "Pulling latest Docker image..."
-            sudo docker pull vst.kr.ncr.ntruss.com/vst/my-app:latest
+            docker pull vst.kr.ncr.ntruss.com/vst/my-app:latest
 
             echo "Stopping old container..."
-            sudo docker stop my-app || true
-            sudo docker rm my-app || true
+            docker stop my-app || true
+            docker rm my-app || true
 
             echo "Starting new container..."
-            sudo docker run -d --name my-app -p 80:3000 vst.kr.ncr.ntruss.com/vst/my-app:latest
+            docker run -d --name my-app -p 3000:3000 vst.kr.ncr.ntruss.com/vst/my-app:latest
