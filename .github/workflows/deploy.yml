@@ -1,0 +1,80 @@
+name: CI/CD 파이프라인
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22 
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to NCP Container Registry
+        run: |
+          echo "${{ secrets.NCP_SECRET_KEY }}" | \
+          docker login --username ${{ secrets.NCP_ACCESS_KEY }} \
+                       --password-stdin vst.kr.ncr.ntruss.com
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: vst.kr.ncr.ntruss.com/vst/my-app:latest
+          
+  deploy:
+    runs-on: ubuntu-latest
+    needs: docker
+
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }} 
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            echo "Login to NCP Container Registry..."
+            echo "${{ secrets.NCP_SECRET_KEY }}" | \
+            docker login --username ${{ secrets.NCP_ACCESS_KEY }} \
+                         --password-stdin vst.kr.ncr.ntruss.com
+
+            echo "Pulling latest Docker image..."
+            docker pull vst.kr.ncr.ntruss.com/vst/my-app:latest
+
+            echo "Stopping old container..."
+            docker stop my-app || true
+            docker rm my-app || true
+
+            echo "Starting new container..."
+            docker run -d --name my-app -p 3000:3000 vst.kr.ncr.ntruss.com/vst/my-app:latest
