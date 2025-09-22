@@ -5,6 +5,9 @@ RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile
 
+ARG API_BASE
+ENV API_BASE=$API_BASE
+
 # 2. Builder Stage: Build the application
 FROM node:22-alpine AS builder
 WORKDIR /app
