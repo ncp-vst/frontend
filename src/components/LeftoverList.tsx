@@ -54,22 +54,6 @@ export default function LeftoverList() {
       <h3 className="mb-3 text-sm font-semibold text-gray-700">자주 남는 식재료 TOP 10</h3>
 
       <div className="mb-4 flex gap-2">
-        <input
-          value={newItem}
-          onChange={(e) => setNewItem(e.target.value)}
-          placeholder="새 식재료 입력"
-          className="flex-1 rounded-xl border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-300"
-        />
-        <button
-          onClick={() => {
-            if (!newItem.trim()) return;
-            setLeftovers((prev) => [newItem.trim(), ...prev].slice(0, 10));
-            setNewItem("");
-          }}
-          className="inline-flex items-center gap-1 rounded-xl bg-orange-500 px-3 py-2 text-white hover:bg-orange-600"
-        >
-          <PlusCircle size={16} /> 추가
-        </button>
         <button
           onClick={() => {
             localStorage.removeItem("leftovers");
