@@ -17,7 +17,7 @@ type NdjsonItem = Record<string, unknown>;
 
 export async function consumeNdjsonStream(): Promise<void> {
   try {
-    const response = await fetch("http://localhost:8000/api/v1/chat/simple", {
+    const response = await fetch("http://localhost:8000/api/v1/chat/recipe-recommend", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
