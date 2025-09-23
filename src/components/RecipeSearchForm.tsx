@@ -11,7 +11,7 @@ type Props = {
 
 async function incrementLeftovers(names: string[]) {
   if (!names.length) return;
-  await fetch("/freq-ingrdt/upsert", {
+  await fetch("/api-server/freq-ingrdt/upsert", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ names }),

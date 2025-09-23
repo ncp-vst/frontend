@@ -17,7 +17,7 @@ type NdjsonItem = Record<string, unknown>;
 
 export async function consumeNdjsonStream(): Promise<void> {
   try {
-    const response = await fetch("http://localhost:8000/api/v1/chat/recipe-recommend", {
+    const response = await fetch("/clova/api/v1/chat/recipe-recommend", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -99,8 +99,6 @@ export async function consumeNdjsonStream(): Promise<void> {
   }
 }
 
-// 실행
-consumeNdjsonStream();
 
 function RecipePageContent() {
   const params = useSearchParams();
@@ -112,6 +110,10 @@ function RecipePageContent() {
     setTerm(query);
     setRefreshKey((prev) => prev + 1);
   };
+
+  // 요리 추천
+  console.log(q);
+  consumeNdjsonStream();
 
   const results = term
     ? mockRecipes.filter((r) => r.name.includes(term) || term.split(',').some((t) => r.name.includes(t.trim())))
