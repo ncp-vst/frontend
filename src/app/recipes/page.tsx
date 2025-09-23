@@ -6,7 +6,7 @@ import RecipeSearchForm from "@/components/RecipeSearchForm";
 import SectionCard from "@/components/SectionCard";
 import LeftoverList from "@/components/LeftoverList";
 
-const mockRecipes = [
+let recommendRecipes = [
   { id: 1, name: "양파 볶음", cuisine: "한식", time: 15, level: "쉬움", rating: 4.8 },
   { id: 2, name: "야채 스프", cuisine: "양식", time: 30, level: "보통", rating: 4.5 },
   { id: 3, name: "양파 무침", cuisine: "한식", time: 10, level: "쉬움", rating: 4.3 },
@@ -15,16 +15,18 @@ const mockRecipes = [
 // Define the shape of each JSON line. 모르면 unknown으로 둬도 OK.
 type NdjsonItem = Record<string, unknown>;
 
-export async function consumeNdjsonStream(): Promise<void> {
+export async function consumeNdjsonStream(query: string): Promise<void> {
   try {
+    // 추천 요리 초기화
+    recommendRecipes = [];
+
     const response = await fetch("/clova/api/v1/chat/recipe-recommend", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        message: "string",
-        max_tokens: 256,
-        temperature: 0.5,
-        system_prompt: "string",
+        message: query,
+        max_tokens: 2000,
+        temperature: 0.3
       }),
     });
 
@@ -75,7 +77,14 @@ export async function consumeNdjsonStream(): Promise<void> {
 
         try {
           const jsonObject: NdjsonItem = JSON.parse(candidate);
-          console.log("Received object:", jsonObject);
+	  const recipe = jsonObject.message;
+
+	  try {
+	      recommendRecipes = JSON.parse(JSON.stringify(recipe));
+	  } catch (e) {
+	    // 아무 작업 안함
+	  }
+
           // TODO: handle(jsonObject)
         } catch (e) {
           console.error("Error parsing JSON:", e, "Line:", candidate);
@@ -106,18 +115,17 @@ function RecipePageContent() {
   const [term, setTerm] = useState(q);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // 요리 추천 실행
+  consumeNdjsonStream(q);
+
   const handleSearch = (query: string) => {
     setTerm(query);
     setRefreshKey((prev) => prev + 1);
   };
 
-  // 요리 추천
-  console.log(q);
-  consumeNdjsonStream();
-
   const results = term
-    ? mockRecipes.filter((r) => r.name.includes(term) || term.split(',').some((t) => r.name.includes(t.trim())))
-    : mockRecipes;
+    ? recommendRecipes.filter((r) => r.name.includes(term) || term.split(',').some((t) => r.name.includes(t.trim())))
+    : recommendRecipes;
 
   const resultsTitle = term ? `추천 요리 결과: ${term}` : "추천 요리 결과";
 
@@ -132,7 +140,7 @@ function RecipePageContent() {
         <h2 className="mb-3 text-lg font-semibold text-gray-700">{resultsTitle}</h2>
         {results.length === 0 ? (
           <div className="rounded-2xl border border-dashed px-4 py-6 text-center text-sm text-gray-500">
-            추천 결과가 없습니다. 검색어를 바꿔보세요.
+            추천 결과가 없습니다.
           </div>
         ) : (
           <GridLayout>
