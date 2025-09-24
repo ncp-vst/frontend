@@ -38,7 +38,7 @@ export default function Header() {
         </nav>
 
         <div className="justify-self-end hidden md:block">
-          <Link href="/login" className="text-sm text-gray-600 hover:text-orange-600">로그인</Link>
+          <Link href="/auth" className="text-sm text-gray-600 hover:text-orange-600">로그인</Link>
         </div>
       </div>
     </header>
