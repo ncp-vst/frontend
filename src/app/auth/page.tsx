@@ -1,6 +1,8 @@
 ﻿﻿"use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUserStore } from "@/stores/userStore";
 
 const REMEMBER_FLAG_KEY = "auth:remember-me";
 const REMEMBER_EMAIL_KEY = "auth:remember-email";
@@ -168,6 +170,9 @@ export default function AuthPage() {
     setSignupErrors({});
   };
 
+  const router = useRouter();
+  const setUser = useUserStore((state) => state.setUser);
+  
   const handleLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const errors: LoginErrors = {};
@@ -206,9 +211,12 @@ export default function AuthPage() {
         );
         return;
       }
+      setUser(payload.data);
+
 
       setLoginSuccess(true);
       resetLoginForm(true);
+      router.push("/");
     } catch (error) {
       console.error("Login request failed", error);
       setLoginServerError("로그인 요청 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.");

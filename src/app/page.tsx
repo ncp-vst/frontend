@@ -3,9 +3,13 @@ import DesktopLayout from "@/components/layouts/DesktopLayout";
 import TodayMeal from "@/components/TodayMeal";
 import RecipeSearchForm from "@/components/RecipeSearchForm";
 import { useRouter } from "next/navigation";
+import { useUserStore } from "@/stores/userStore";
 
 export default function HomePage() {
   const router = useRouter();
+  const user = useUserStore((state) => state.user);
+
+  console.log(user);
   return (
     <DesktopLayout>
       <div className="mb-6 rounded-2xl bg-orange-400 p-5 text-white shadow-sm">
