@@ -10,13 +10,13 @@ type Props = {
   className?: string;
 };
 
-async function incrementLeftovers(token: string, names: string[]) {
-  if (!names.length) return;
+async function incrementLeftovers(token: string | null, names: string[]) {
+  if (!names.length || !token) return;
   await fetch("/freq-ingrdt/upsert", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-XSRF-TOKEN": token
+      "X-XSRF-TOKEN": token,
     },
     body: JSON.stringify(names),
   });
@@ -37,7 +37,7 @@ export default function RecipeSearchForm({
   className = "",
 }: Props) {
   const [value, setValue] = useState(initialValue);
-  const token = useTokenStore((token) => token);
+  const token = useTokenStore((state) => state.token);
 
   useEffect(() => {
     setValue(initialValue);

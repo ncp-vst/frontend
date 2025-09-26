@@ -1,17 +1,18 @@
-﻿"use client";
+"use client";
 import { useEffect, useState } from "react";
 import { useTokenStore } from "@/stores/tokenStore";
 import { Trash2, RotateCcw } from "lucide-react";
 
 type Row = { id: number; name: string; search_count: number };
 
-async function fetchLeftovers(token: string): Promise<Row[]> {
-  const res = await fetch("/freq-ingrdt", { 
+async function fetchLeftovers(token: string | null): Promise<Row[]> {
+  if (!token) return [];
+  const res = await fetch("/freq-ingrdt", {
     cache: "no-store",
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
       "X-XSRF-TOKEN": token,
-    }
+    },
   });
   if (!res.ok) throw new Error("불러오기 실패");
 
@@ -19,35 +20,41 @@ async function fetchLeftovers(token: string): Promise<Row[]> {
   return Array.isArray(json) ? json : json.data ?? [];
 }
 
-async function deleteById(token: string, id: number) {
+async function deleteById(token: string | null, id: number) {
+  if (!token) return;
   await fetch(`/freq-ingrdt/delete/${id}`, {
     method: "DELETE",
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
       "X-XSRF-TOKEN": token,
-    }
+    },
   });
 }
 
-async function resetAll(token: string) {
+async function resetAll(token: string | null) {
+  if (!token) return;
   await fetch("/freq-ingrdt/reset", {
     method: "DELETE",
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
       "X-XSRF-TOKEN": token,
-    }
+    },
   });
 }
 
-export default function LeftoverList({ refreshKey = 0 }: { refreshKey?: number }) {
-  const token = useTokenStore((token) => token);
+export default function LeftoverList({
+  refreshKey = 0,
+}: {
+  refreshKey?: number;
+}) {
+  const token = useTokenStore((state) => state.token);
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
 
   const load = async () => {
     setLoading(true);
     try {
-      const data = await fetchLeftovers(token.token);
+      const data = await fetchLeftovers(token);
       setRows(data);
     } finally {
       setLoading(false);
@@ -66,10 +73,12 @@ export default function LeftoverList({ refreshKey = 0 }: { refreshKey?: number }
   return (
     <section>
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="text-lg font-semibold text-gray-700">자주 남는 식재료 TOP 10</h3>
+        <h3 className="text-lg font-semibold text-gray-700">
+          자주 남는 식재료 TOP 10
+        </h3>
         <button
           onClick={async () => {
-            await resetAll(token.token);
+            await resetAll(token);
             await load();
           }}
           className="inline-flex items-center gap-1 rounded-xl border px-3 py-2 text-gray-600 hover:bg-gray-100"
@@ -88,10 +97,12 @@ export default function LeftoverList({ refreshKey = 0 }: { refreshKey?: number }
                 key={r.id}
                 className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
               >
-                <span>{idx + 1}. {r.name} ({r.search_count})</span>
+                <span>
+                  {idx + 1}. {r.name} ({r.search_count})
+                </span>
                 <button
                   onClick={async () => {
-                    await deleteById(token.token, r.id);
+                    await deleteById(token, r.id);
                     await load();
                   }}
                   className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-1 text-xs text-gray-700 hover:bg-gray-200"

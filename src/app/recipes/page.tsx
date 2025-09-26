@@ -42,9 +42,9 @@ function RecipePageContent() {
       try {
         const response = await fetch("/clova/api/v1/chat/recipe-recommend", {
           method: "POST",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
-            "X-XSRF-TOKEN": token.token,
+            ...(token.token && { "X-XSRF-TOKEN": token.token }),
           },
           body: JSON.stringify({
             message: q,
@@ -148,9 +148,9 @@ function RecipePageContent() {
     const freqIngrdtUpsert = async () => {
       await fetch("/freq-ingrdt/upsert", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "X-XSRF-TOKEN": token.token,
+          ...(token.token && { "X-XSRF-TOKEN": token.token }),
         },
         body: JSON.stringify(splitAndTrim(q)),
       });
