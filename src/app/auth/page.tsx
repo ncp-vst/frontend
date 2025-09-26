@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/userStore";
+import { useTokenStore } from "@/stores/tokenStore";
 
 const REMEMBER_FLAG_KEY = "auth:remember-me";
 const REMEMBER_EMAIL_KEY = "auth:remember-email";
@@ -172,6 +173,7 @@ export default function AuthPage() {
 
   const router = useRouter();
   const setUser = useUserStore((state) => state.setUser);
+  const setToken = useTokenStore((state) => state.setToken);
   
   const handleLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -212,7 +214,7 @@ export default function AuthPage() {
         return;
       }
       setUser(payload.data ?? null);
-
+      setToken(csrfToken ?? null);
 
       setLoginSuccess(true);
       resetLoginForm(true);

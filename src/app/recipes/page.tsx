@@ -1,6 +1,7 @@
 "use client";
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTokenStore } from "@/stores/tokenStore";
 import GridLayout from "@/components/layouts/GridLayout";
 import RecipeSearchForm from "@/components/RecipeSearchForm";
 import SectionCard from "@/components/SectionCard";
@@ -21,6 +22,7 @@ type Recipe = {
 
 
 function RecipePageContent() {
+  const token = useTokenStore((token) => token);
   const params = useSearchParams();
   const q = params.get("q") || "";
   const [recommendRecipes, setRecommendRecipes] = useState<Recipe[]>([]); // State for recipes
@@ -129,8 +131,32 @@ function RecipePageContent() {
     window.location.search = `q=${encodeURIComponent(query)}`;
   };
 
-  const results = recommendRecipes;
+  useEffect(() => {
+    const splitAndTrim = (q) => {
+      if (!q) return [];
+      const arr = q.split(",").map(s => s.trim());
+      if (arr.length === 1 && arr[0] === "") {
+        return [];
+      }
+      return arr;
+    }
+    
+    const freqIngrdtUpsert = async () => {
+      const freqIngrdtResponse = await fetch("/freq-ingrdt/upsert", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "X-XSRF-TOKEN": token,
+        },
+        body: JSON.stringify(splitAndTrim(q)),
+      });
+    };
+    freqIngrdtUpsert();    
+  }, []);
 
+  
+
+  const results = recommendRecipes;
   const resultsTitle = q ? `추천 요리 결과: ${q}` : "추천 요리 결과";
 
   return (
