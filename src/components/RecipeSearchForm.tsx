@@ -1,21 +1,41 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
+
+type FreqIngredient = {
+  id: number;
+  name: string;
+  search_count: number;
+};
+
+interface UpsertResponse {
+  success?: boolean;
+  data?: FreqIngredient[];
+}
 
 type Props = {
   onSearch: (query: string) => void;
   placeholder?: string;
   initialValue?: string;
   className?: string;
+  onFreqIngredientsUpdate?: (rows: FreqIngredient[]) => void;
 };
 
-async function incrementLeftovers(names: string[]) {
-  if (!names.length) return;
-  await fetch("/freq-ingrdt/upsert", {
+async function incrementLeftovers(names: string[]): Promise<FreqIngredient[]> {
+  if (!names.length) return [];
+
+  const res = await fetch("/freq-ingrdt/upsert", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ names }),
+    body: JSON.stringify(names),
   });
+
+  if (!res.ok) {
+    throw new Error(`식재료 기록을 저장하지 못했습니다. ${res.status}`);
+  }
+
+  const json = (await res.json()) as UpsertResponse;
+  return json?.data ?? [];
 }
 
 function parseIngredients(q: string): string[] {
@@ -31,6 +51,7 @@ export default function RecipeSearchForm({
   placeholder = "예: 양파, 계란, 당근...",
   initialValue = "",
   className = "",
+  onFreqIngredientsUpdate,
 }: Props) {
   const [value, setValue] = useState(initialValue);
 
@@ -48,7 +69,16 @@ export default function RecipeSearchForm({
     }
 
     const ingredients = parseIngredients(query);
-    await incrementLeftovers(ingredients);
+
+    try {
+      const rows = await incrementLeftovers(ingredients);
+      if (rows.length) {
+        onFreqIngredientsUpdate?.(rows);
+      }
+    } catch (error) {
+      console.error("자주 검색한 식재료 업데이트 실패", error);
+    }
+
     onSearch(query);
     setValue("");
   };
