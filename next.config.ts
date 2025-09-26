@@ -9,9 +9,9 @@ const nextConfig: NextConfig = {
 	async rewrites() {
 		return [
 			{
-                                source: "/auth/:path*",
-                                destination: `${API_BASE}/auth/:path*`
-                        },
+				source: "/auth/:path*",
+				destination: `${API_BASE}/auth/:path*`
+			},
 			{
 				source: "/freq-ingrdt/:path*",
 				destination: `${API_BASE}/freq-ingrdt/:path*`

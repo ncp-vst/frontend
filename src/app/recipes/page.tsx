@@ -1,6 +1,8 @@
 "use client";
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useTokenStore } from "@/stores/tokenStore";
 import GridLayout from "@/components/layouts/GridLayout";
 import RecipeSearchForm from "@/components/RecipeSearchForm";
 import SectionCard from "@/components/SectionCard";
@@ -21,6 +23,8 @@ type Recipe = {
 
 
 function RecipePageContent() {
+  const router = useRouter();
+  const token = useTokenStore((token) => token);
   const params = useSearchParams();
   const q = params.get("q") || "";
   const [recommendRecipes, setRecommendRecipes] = useState<Recipe[]>([]); // State for recipes
@@ -38,7 +42,10 @@ function RecipePageContent() {
       try {
         const response = await fetch("/clova/api/v1/chat/recipe-recommend", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "X-XSRF-TOKEN": token.token,
+          },
           body: JSON.stringify({
             message: q,
             max_tokens: 2000,
@@ -125,12 +132,36 @@ function RecipePageContent() {
   }, [q]);
 
   const handleSearch = (query: string) => {
-    // To trigger the useEffect, we need to update the URL's query parameter 'q'.
-    window.location.search = `q=${encodeURIComponent(query)}`;
+    router.push(`/recipes?q=${encodeURIComponent(query)}`);
   };
 
-  const results = recommendRecipes;
+  useEffect(() => {
+    const splitAndTrim = (query: string) => {
+      if (!query) return [];
+      const arr = query.split(",").map(s => s.trim());
+      if (arr.length === 1 && arr[0] === "") {
+        return [];
+      }
+      return arr;
+    }
+    
+    const freqIngrdtUpsert = async () => {
+      await fetch("/freq-ingrdt/upsert", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "X-XSRF-TOKEN": token.token,
+        },
+        body: JSON.stringify(splitAndTrim(q)),
+      });
+    };
+    
+    if (q) {
+      freqIngrdtUpsert();
+    }
+  }, [q, token.token]);
 
+  const results = recommendRecipes;
   const resultsTitle = q ? `추천 요리 결과: ${q}` : "추천 요리 결과";
 
   return (
