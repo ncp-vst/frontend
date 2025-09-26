@@ -14,7 +14,9 @@ async function fetchLeftovers(token: string): Promise<Row[]> {
     }
   });
   if (!res.ok) throw new Error("불러오기 실패");
-  return res.json();
+
+  const json = await res.json();
+  return Array.isArray(json) ? json : json.data ?? [];
 }
 
 async function deleteById(token: string, id: number) {
@@ -45,7 +47,7 @@ export default function LeftoverList({ refreshKey = 0 }: { refreshKey?: number }
   const load = async () => {
     setLoading(true);
     try {
-      const data = await fetchLeftovers(token);
+      const data = await fetchLeftovers(token.token);
       setRows(data);
     } finally {
       setLoading(false);
@@ -67,7 +69,7 @@ export default function LeftoverList({ refreshKey = 0 }: { refreshKey?: number }
         <h3 className="text-lg font-semibold text-gray-700">자주 남는 식재료 TOP 10</h3>
         <button
           onClick={async () => {
-            await resetAll(token);
+            await resetAll(token.token);
             await load();
           }}
           className="inline-flex items-center gap-1 rounded-xl border px-3 py-2 text-gray-600 hover:bg-gray-100"
@@ -89,7 +91,7 @@ export default function LeftoverList({ refreshKey = 0 }: { refreshKey?: number }
                 <span>{idx + 1}. {r.name} ({r.search_count})</span>
                 <button
                   onClick={async () => {
-                    await deleteById(token, r.id);
+                    await deleteById(token.token, r.id);
                     await load();
                   }}
                   className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-1 text-xs text-gray-700 hover:bg-gray-200"
