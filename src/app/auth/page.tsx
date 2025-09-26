@@ -1,10 +1,11 @@
-﻿"use client";
+﻿﻿"use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
-const AUTH_SIMULATION_DELAY = 1500;
 const REMEMBER_FLAG_KEY = "auth:remember-me";
 const REMEMBER_EMAIL_KEY = "auth:remember-email";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
 type Tab = "login" | "signup";
 
@@ -31,6 +32,24 @@ type SignupErrors = {
   password?: string;
   passwordConfirm?: string;
   name?: string;
+};
+
+type ApiError = {
+  code?: string;
+  message?: string;
+};
+
+type ApiResponse<T> = {
+  success: boolean;
+  data?: T;
+  error?: ApiError | null;
+};
+
+type UserPayload = {
+  login_id: string;
+  name: string;
+  created_dt?: string;
+  updated_dt?: string;
 };
 
 const getPasswordStrength = (password: string) => {
@@ -74,13 +93,20 @@ export default function AuthPage() {
   const [signupLoading, setSignupLoading] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [loginServerError, setLoginServerError] = useState<string | null>(null);
+  const [signupServerError, setSignupServerError] = useState<string | null>(null);
 
-  const timers = useRef<NodeJS.Timeout[]>([]);
+  const timers = useRef<Array<ReturnType<typeof setTimeout>>>([]);
 
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  useEffect(() => () => {
+    timers.current.forEach((timer) => clearTimeout(timer));
+    timers.current = [];
+  }, []);
   useEffect(() => {
     setLoginSuccess(false);
     setSignupSuccess(false);
+    setLoginServerError(null);
+    setSignupServerError(null);
   }, [activeTab]);
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -106,6 +132,27 @@ export default function AuthPage() {
     signupForm.passwordConfirm.length > 0 &&
     signupForm.password !== signupForm.passwordConfirm;
 
+  const apiUrl = (path: string) => (API_BASE ? `${API_BASE}${path}` : path);
+
+  const fetchCsrfToken = async () => {
+    const response = await fetch(apiUrl("/auth/xsrf-token"), {
+      credentials: "include",
+      headers: { Accept: "application/json" },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch CSRF token (${response.status})`);
+    }
+
+    const data = (await response.json()) as Record<string, string | undefined>;
+    const token = data["X-XSRF-TOKEN"];
+    if (!token) {
+      throw new Error("CSRF token is missing in response");
+    }
+
+    return token;
+  };
+
   const handleTabChange = (tab: Tab) => setActiveTab(tab);
 
   const resetLoginForm = (preserveRemember = false) => {
@@ -121,25 +168,56 @@ export default function AuthPage() {
     setSignupErrors({});
   };
 
-  const handleLoginSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const errors: LoginErrors = {};
     if (!loginForm.email.includes("@")) errors.email = "올바른 이메일 형식을 입력해주세요";
     if (!loginForm.password) errors.password = "비밀번호를 입력해주세요";
     setLoginErrors(errors);
+    setLoginServerError(null);
     if (Object.keys(errors).length) return;
 
     setLoginLoading(true);
     setLoginSuccess(false);
-    const t = setTimeout(() => {
-      setLoginLoading(false);
+
+    try {
+      const csrfToken = await fetchCsrfToken();
+      const response = await fetch(apiUrl("/auth/login"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-XSRF-TOKEN": csrfToken,
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          login_id: loginForm.email,
+          password: loginForm.password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const payload = (await response.json()) as ApiResponse<UserPayload>;
+      if (!payload.success) {
+        setLoginServerError(
+          payload.error?.message ?? "로그인에 실패했어요. 입력한 정보를 다시 확인해주세요."
+        );
+        return;
+      }
+
       setLoginSuccess(true);
       resetLoginForm(true);
-    }, AUTH_SIMULATION_DELAY);
-    timers.current.push(t);
+    } catch (error) {
+      console.error("Login request failed", error);
+      setLoginServerError("로그인 요청 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setLoginLoading(false);
+    }
   };
 
-  const handleSignupSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSignupSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const errors: SignupErrors = {};
     if (!signupForm.email.includes("@")) errors.email = "올바른 이메일 형식을 입력해주세요";
@@ -148,18 +226,58 @@ export default function AuthPage() {
       errors.passwordConfirm = "비밀번호가 일치하지 않습니다";
     if (!signupForm.name.trim()) errors.name = "이름을 입력해주세요";
     setSignupErrors(errors);
+    setSignupServerError(null);
     if (Object.keys(errors).length) return;
 
     setSignupLoading(true);
     setSignupSuccess(false);
-    const t = setTimeout(() => {
-      setSignupLoading(false);
+
+    try {
+      const csrfToken = await fetchCsrfToken();
+      const response = await fetch(apiUrl("/auth/join"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-XSRF-TOKEN": csrfToken,
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          login_id: signupForm.email,
+          password: signupForm.password,
+          name: signupForm.name,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const payload = (await response.json()) as ApiResponse<UserPayload>;
+      if (!payload.success) {
+        const message =
+          payload.error?.message ?? "회원가입에 실패했어요. 입력 내용을 다시 확인해주세요.";
+        if (payload.error?.code === "AUTH.ALREADY_EXSIST_ID") {
+          if (message.includes("이름")) {
+            setSignupErrors((prev) => ({ ...prev, name: message }));
+          } else {
+            setSignupErrors((prev) => ({ ...prev, email: message }));
+          }
+        } else {
+          setSignupServerError(message);
+        }
+        return;
+      }
+
       setSignupSuccess(true);
       resetSignupForm();
-      const s = setTimeout(() => setActiveTab("login"), 2000);
-      timers.current.push(s);
-    }, AUTH_SIMULATION_DELAY);
-    timers.current.push(t);
+      const timer = setTimeout(() => setActiveTab("login"), 2000);
+      timers.current.push(timer);
+    } catch (error) {
+      console.error("Signup request failed", error);
+      setSignupServerError("회원가입 요청 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setSignupLoading(false);
+    }
   };
 
   return (
@@ -224,6 +342,12 @@ export default function AuthPage() {
             {loginSuccess && (
               <div className="bg-[linear-gradient(135deg,#E8F5E9,#F1F8E9)] text-[#2E7D32] p-4 rounded-xl text-[15px] mb-6 border-l-4 border-[#4CAF50] animate-slide-down">
                 로그인 성공! 잠시 후 메인 페이지로 이동합니다.
+              </div>
+            )}
+
+            {loginServerError && (
+              <div className="bg-[linear-gradient(135deg,#FDECEA,#FFF5F5)] text-[#C62828] p-4 rounded-xl text-[15px] mb-6 border-l-4 border-[#EF5350] animate-slide-down">
+                {loginServerError}
               </div>
             )}
 
@@ -325,6 +449,12 @@ export default function AuthPage() {
             {signupSuccess && (
               <div className="bg-[linear-gradient(135deg,#E8F5E9,#F1F8E9)] text-[#2E7D32] p-4 rounded-xl text-[15px] mb-6 border-l-4 border-[#4CAF50] animate-slide-down">
                 회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.
+              </div>
+            )}
+
+            {signupServerError && (
+              <div className="bg-[linear-gradient(135deg,#FDECEA,#FFF5F5)] text-[#C62828] p-4 rounded-xl text-[15px] mb-6 border-l-4 border-[#EF5350] animate-slide-down">
+                {signupServerError}
               </div>
             )}
 
