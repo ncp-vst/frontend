@@ -181,9 +181,6 @@ function RecipePageContent() {
           onSearch={handleSearch}
           onFreqIngredientsUpdate={handleFreqIngredientsUpdate}
         />
-        {freqError && (
-          <p className="mt-2 text-sm text-red-500">{freqError}</p>
-        )}
       </section>
 
       <section>
