@@ -211,7 +211,7 @@ export default function AuthPage() {
         );
         return;
       }
-      setUser(payload.data);
+      setUser(payload.data ?? null);
 
 
       setLoginSuccess(true);
