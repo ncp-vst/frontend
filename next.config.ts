@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
-const API_BASE = "http://49.50.130.15:8080";
-const CLOVA_BASE = "http://49.50.130.15:8000";
+const API_BASE = process.env.API_BASE ?? "http://49.50.130.15:8080";
+const CLOVA_BASE = process.env.CLOVA_BASE ?? "http://49.50.130.15:8000";
 
 const nextConfig: NextConfig = {
 	reactStrictMode: true,
