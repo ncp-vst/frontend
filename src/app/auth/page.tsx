@@ -185,7 +185,7 @@ export default function AuthPage() {
 
     try {
       const csrfToken = await fetchCsrfToken();
-      const response = await fetch(apiUrl("/auth/login"), {
+      const response = await fetch("/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -240,7 +240,7 @@ export default function AuthPage() {
 
     try {
       const csrfToken = await fetchCsrfToken();
-      const response = await fetch(apiUrl("/auth/join"), {
+      const response = await fetch("/auth/join", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
