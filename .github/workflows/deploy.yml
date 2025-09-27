@@ -9,34 +9,14 @@ on:
       - main 
 
 jobs:
-  build:
-    runs-on: ubuntu-latest 
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 22 
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build project
-        run: npm run build
-
   docker:
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to NCP Container Registry
         run: |
@@ -51,11 +31,13 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: vst.kr.ncr.ntruss.com/vst/my-app:latest
+          build-args: |
+            API_BASE=http://49.50.130.15:8080
+            CLOVA_BASE=http://49.50.130.15:8000
           
   deploy:
     runs-on: ubuntu-latest
     needs: docker
-
     steps:
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.6
@@ -77,4 +59,4 @@ jobs:
             docker rm my-app || true
 
             echo "Starting new container..."
-            docker run -d --name my-app -p 3000:3000 -e API_BASE=http://49.50.130.15:8080 -e CLOVA_BASE=http://49.50.130.15:8000 vst.kr.ncr.ntruss.com/vst/my-app:latest
+            docker run -d --name my-app -p 3000:3000 vst.kr.ncr.ntruss.com/vst/my-app:latest
