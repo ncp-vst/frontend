@@ -22,10 +22,19 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm run build
 
-# 2. Runner Stage: Run the application
+# 2. Runner Stage: Run the application + debug용 curl 설치
 FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+
+# Runner stage에서도 빌드 시점 ENV 전달 (디버깅용)
+ARG API_BASE
+ARG CLOVA_BASE
+ENV API_BASE=$API_BASE
+ENV CLOVA_BASE=$CLOVA_BASE
+
+# curl 설치 (테스트용)
+RUN apk add --no-cache curl
 
 # 필요한 파일만 복사
 COPY --from=builder /app/node_modules ./node_modules
