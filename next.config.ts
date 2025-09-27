@@ -8,18 +8,10 @@ const nextConfig: NextConfig = {
 	output: "standalone",
 	async rewrites() {
 		return [
-			{
-				source: "/auth/:path*",
-				destination: `${API_BASE}/auth/:path*`
-			},
-			{
-				source: "/freq-ingrdt/:path*",
-				destination: `${API_BASE}/freq-ingrdt/:path*`
-			},
-			{
-				source: "/clova/:path*",
-				destination: `${CLOVA_BASE}/:path*`
-			}
+			{ source: "/auth/:path*", destination: `${API_BASE}/auth/:path*` },
+			{ source: "/freq-ingrdt/:path*", destination: `${API_BASE}/freq-ingrdt/:path*` },
+			{ source: "/meal-plan/:path*", destination: `${API_BASE}/meal-plan/:path*` },
+			{ source: "/clova/:path*", destination: `${CLOVA_BASE}/:path*` }
 		];
 	},
 };

@@ -15,9 +15,8 @@ async function fetchLeftovers(token: string | null): Promise<Row[]> {
     },
   });
   if (!res.ok) throw new Error("불러오기 실패");
-
   const json = await res.json();
-  return Array.isArray(json) ? json : json.data ?? [];
+  return Array.isArray(json?.data) ? json.data : [];
 }
 
 async function deleteById(token: string | null, id: number) {
