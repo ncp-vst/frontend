@@ -77,4 +77,4 @@ jobs:
             docker rm my-app || true
 
             echo "Starting new container..."
-            docker run -d --name my-app -p 3000:3000 vst.kr.ncr.ntruss.com/vst/my-app:latest
+            docker run -d --name my-app -p 3000:3000 -e API_BASE=http://49.50.130.15:8080 -e CLOVA_BASE=http://49.50.130.15:8000 vst.kr.ncr.ntruss.com/vst/my-app:latest
