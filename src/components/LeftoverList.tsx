@@ -7,7 +7,8 @@ type Row = { id: number; name: string; search_count: number };
 async function fetchLeftovers(): Promise<Row[]> {
   const res = await fetch("/freq-ingrdt", { cache: "no-store" });
   if (!res.ok) throw new Error("불러오기 실패");
-  return res.json();
+  const json = await res.json();
+  return Array.isArray(json?.data) ? json.data : [];
 }
 
 async function deleteById(id: number) {
