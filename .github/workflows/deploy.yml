@@ -30,8 +30,8 @@ jobs:
           push: true
           tags: vst.kr.ncr.ntruss.com/vst/my-app:latest
           build-args: |
-            API_BASE=http://허용된_API_IP:8080
-            CLOVA_BASE=http://허용된_CLOVA_IP:8000
+            API_BASE=http://49.50.130.15:8080
+            CLOVA_BASE=http://49.50.130.15:8000
           
   deploy:
     runs-on: ubuntu-latest
