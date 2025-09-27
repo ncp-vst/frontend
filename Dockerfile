@@ -8,6 +8,12 @@ RUN apk add --no-cache python3 g++ make
 # pnpm 설치
 RUN npm install -g pnpm
 
+# 빌드 시점 환경 변수 주입
+ARG API_BASE
+ARG CLOVA_BASE
+ENV API_BASE=$API_BASE
+ENV CLOVA_BASE=$CLOVA_BASE
+
 # 패키지 설치
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile
@@ -21,14 +27,12 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# 실행에 필요한 파일만 복사
+# 필요한 파일만 복사
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 
-# 런타임 환경 변수는 docker run -e 로 주입 가능
-# 예: docker run -d -p 3000:3000 -e API_BASE=http://49.50.130.15:8080 -e CLOVA_BASE=http://49.50.130.15:8000 my-app
 EXPOSE 3000
 
 # pnpm 없이 Next.js 직접 실행
