@@ -35,5 +35,5 @@ COPY --from=builder /app/public ./public
 
 EXPOSE 3000
 
-# pnpm 없이 Next.js 직접 실행
-CMD ["node_modules/.bin/next", "start"]
+# Next.js를 0.0.0.0에서 바인딩
+CMD ["node_modules/.bin/next", "start", "-H", "0.0.0.0"]
