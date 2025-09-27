@@ -8,8 +8,6 @@ import { useTokenStore } from "@/stores/tokenStore";
 const REMEMBER_FLAG_KEY = "auth:remember-me";
 const REMEMBER_EMAIL_KEY = "auth:remember-email";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
-
 type Tab = "login" | "signup";
 
 type LoginForm = {
@@ -135,10 +133,8 @@ export default function AuthPage() {
     signupForm.passwordConfirm.length > 0 &&
     signupForm.password !== signupForm.passwordConfirm;
 
-  const apiUrl = (path: string) => (API_BASE ? `${API_BASE}${path}` : path);
-
   const fetchCsrfToken = async () => {
-    const response = await fetch(apiUrl("/auth/xsrf-token"), {
+    const response = await fetch("/auth/xsrf-token", {
       credentials: "include",
       headers: { Accept: "application/json" },
     });
