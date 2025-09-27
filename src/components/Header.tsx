@@ -42,7 +42,6 @@ export default function Header() {
           <NavItem href="/">홈</NavItem>
           <NavItem href="/recipes">요리 추천</NavItem>
           <NavItem href="/mealplan">식단 관리</NavItem>
-          <NavItem href="/my">마이페이지</NavItem>
         </nav>
 
         <div className="justify-self-end hidden md:block">

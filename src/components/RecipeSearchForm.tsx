@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useTokenStore } from "@/stores/tokenStore";
 import { Search } from "lucide-react";
 
 type Props = {
@@ -9,11 +10,14 @@ type Props = {
   className?: string;
 };
 
-async function incrementLeftovers(names: string[]) {
-  if (!names.length) return;
+async function incrementLeftovers(token: string | null, names: string[]) {
+  if (!names.length || !token) return;
   await fetch("/freq-ingrdt/upsert", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "X-XSRF-TOKEN": token,
+    },
     body: JSON.stringify(names),
   });
 }
@@ -33,6 +37,7 @@ export default function RecipeSearchForm({
   className = "",
 }: Props) {
   const [value, setValue] = useState(initialValue);
+  const token = useTokenStore((state) => state.token);
 
   useEffect(() => {
     setValue(initialValue);
@@ -42,15 +47,12 @@ export default function RecipeSearchForm({
     const query = value.trim();
 
     if (!query) {
-      onSearch("");
-      setValue("");
       return;
     }
 
     const ingredients = parseIngredients(query);
-    await incrementLeftovers(ingredients);
+    await incrementLeftovers(token, ingredients);
     onSearch(query);
-    setValue("");
   };
 
   return (
