@@ -133,8 +133,6 @@ export default function AuthPage() {
     signupForm.passwordConfirm.length > 0 &&
     signupForm.password !== signupForm.passwordConfirm;
 
-  const apiUrl = (path: string) => (API_BASE ? `${API_BASE}${path}` : path);
-
   const fetchCsrfToken = async () => {
     const response = await fetch("/api/auth/xsrf-token", {
       credentials: "include",
