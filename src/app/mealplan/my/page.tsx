@@ -19,9 +19,6 @@ type MealPlan = {
   items: MealPlanItem[];
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
-const apiUrl = (path: string) => (API_BASE ? `${API_BASE}${path}` : path);
-
 const sidebarItems = [
   { href: "/mealplan", label: "식단표 만들기", exact: true },
   { href: "/mealplan/my", label: "나만의 식단표" },
@@ -35,7 +32,7 @@ const goalLabelMap: Record<string, string> = { loss: "loss", gain: "gain", norma
 const dateFormatter = new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeStyle: "short" });
 
 async function fetchMealPlans(): Promise<MealPlan[]> {
-  const res = await fetch(apiUrl("/meal-plan"), {
+  const res = await fetch("/api/meal-plan", {
     method: "GET",
     credentials: "include",
   });

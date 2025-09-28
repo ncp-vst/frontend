@@ -7,7 +7,7 @@ type Row = { id: number; name: string; search_count: number };
 
 async function fetchLeftovers(token: string | null): Promise<Row[]> {
   if (!token) return [];
-  const res = await fetch("/freq-ingrdt", {
+  const res = await fetch("/api/freq-ingrdt", {
     cache: "no-store",
     headers: {
       "Content-Type": "application/json",
@@ -21,7 +21,7 @@ async function fetchLeftovers(token: string | null): Promise<Row[]> {
 
 async function deleteById(token: string | null, id: number) {
   if (!token) return;
-  await fetch(`/freq-ingrdt/delete/${id}`, {
+  await fetch(`/api/freq-ingrdt/delete/${id}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -32,7 +32,7 @@ async function deleteById(token: string | null, id: number) {
 
 async function resetAll(token: string | null) {
   if (!token) return;
-  await fetch("/freq-ingrdt/reset", {
+  await fetch("/api/freq-ingrdt/reset", {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",

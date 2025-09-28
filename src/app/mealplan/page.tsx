@@ -190,7 +190,7 @@ export default function MealPlanPage() {
     }
 
     try {
-      const response = await fetch("http://49.50.130.15:8000/api/v1/chat/meal-plan-create", {
+      const response = await fetch("/api/clova/api/v1/chat/meal-plan-create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

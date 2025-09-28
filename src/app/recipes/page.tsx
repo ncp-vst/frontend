@@ -40,7 +40,7 @@ function RecipePageContent() {
     const consumeNdjsonStream = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch("/clova/api/v1/chat/recipe-recommend", {
+        const response = await fetch("/api/clova/api/v1/chat/recipe-recommend", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -146,7 +146,7 @@ function RecipePageContent() {
     }
     
     const freqIngrdtUpsert = async () => {
-      await fetch("/freq-ingrdt/upsert", {
+      await fetch("/api/freq-ingrdt/upsert", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
