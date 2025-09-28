@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUserStore } from "@/stores/userStore";
+import { useEffect, useState } from "react";
 
 function NavItem({ href, children }: { href: string; children: React.ReactNode }) {
   const pathname = usePathname();
@@ -25,10 +26,15 @@ function NavItem({ href, children }: { href: string; children: React.ReactNode }
 export default function Header() {
   const user = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
-  
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const logout = () => {
     setUser(null);
-  }
+  };
 
   return (
     <header className="sticky top-0 z-20 w-full bg-white/80 backdrop-blur shadow-md ring-1 ring-black/5">
@@ -45,10 +51,16 @@ export default function Header() {
         </nav>
 
         <div className="justify-self-end hidden md:block">
-	  {user ? (<Link href="/auth" onClick={logout} className="text-sm text-gray-600 hover:text-orange-600">로그아웃</Link>)
-		  :
-		  (<Link href="/auth" className="text-sm text-gray-600 hover:text-orange-600">로그인</Link>)
-	  }	  
+          {isMounted &&
+            (user ? (
+              <Link href="/auth" onClick={logout} className="text-sm text-gray-600 hover:text-orange-600">
+                로그아웃
+              </Link>
+            ) : (
+              <Link href="/auth" className="text-sm text-gray-600 hover:text-orange-600">
+                로그인
+              </Link>
+            ))}
         </div>
       </div>
     </header>
