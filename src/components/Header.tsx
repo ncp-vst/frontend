@@ -41,7 +41,7 @@ export default function Header() {
       <div className="mx-auto grid h-14 w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4">
         <Link href="/" className="justify-self-start flex items-center gap-2 font-semibold text-xl">
           <span className="text-orange-500">🥘</span>
-          <span>냉장고요리</span>
+          <span>야무진 레시피</span>
         </Link>
 
         <nav className="justify-self-center flex items-center gap-2 md:gap-4 font-semibold">

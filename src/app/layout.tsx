@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "냉장고요리 서비스",
+  title: "야무진 레시피-Yeppy",
   description: "냉장고 속 재료로 만드는 요리 추천 및 식단 관리 서비스",
 };
 

@@ -294,7 +294,7 @@ export default function AuthPage() {
             <div className="w-[120px] h-[120px] mx-auto mb-8 rounded-[30px] bg-white/20 backdrop-blur flex items-center justify-center text-[60px]">
               🍳
             </div>
-            <h1 className="text-4xl font-bold mb-5">냉장고요리</h1>
+            <h1 className="text-4xl font-bold mb-5">야무진 레시피</h1>
             <p className="text-lg opacity-90 leading-relaxed">
               냉장고 속 재료로 만드는
               <br />맛있는 요리 레시피
