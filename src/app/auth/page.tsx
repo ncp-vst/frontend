@@ -276,8 +276,7 @@ export default function AuthPage() {
 
       setSignupSuccess(true);
       resetSignupForm();
-      const timer = setTimeout(() => setActiveTab("login"), 2000);
-      timers.current.push(timer);
+      setActiveTab("login");
     } catch (error) {
       console.error("Signup request failed", error);
       setSignupServerError("회원가입 요청 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.");
@@ -305,10 +304,6 @@ export default function AuthPage() {
               <li className="flex items-center gap-4 text-base">
                 <span className="w-10 h-10 bg-white/20 rounded-[10px] flex items-center justify-center">📱</span>
                 재료 기반 레시피 추천
-              </li>
-              <li className="flex items-center gap-4 text-base">
-                <span className="w-10 h-10 bg-white/20 rounded-[10px] flex items-center justify-center">⭐</span>
-                인기 레시피 TOP 10
               </li>
               <li className="flex items-center gap-4 text-base">
                 <span className="w-10 h-10 bg-white/20 rounded-[10px] flex items-center justify-center">🎯</span>
